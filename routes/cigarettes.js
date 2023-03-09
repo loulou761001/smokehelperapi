@@ -61,7 +61,40 @@ router.get("/compare/:userId", async (req, res) => {
     userId: userId,
     createdAt: { $gte: new Date(startDate) },
   });
-  res.send(results);
+  let sortedCigs = {
+    all: results,
+    monthly: {
+      thisMonth: results.filter((item) => {
+        return item.createdAt >= new Date().setMonth(new Date().getMonth() - 1);
+      }),
+      lastMonth: results.filter((item) => {
+        return (
+          item.createdAt >= new Date().setMonth(new Date().getMonth() - 2) &&
+          item.createdAt < new Date().setMonth(new Date().getMonth() - 1)
+        );
+      }),
+    },
+    weekly: {
+      thisWeek: results.filter((item) => {
+        return item.createdAt >= new Date().setDate(new Date().getDate() - 7);
+      }),
+      lastWeek: results.filter((item) => {
+        return (
+          item.createdAt >= new Date().setDate(new Date().getDate() - 14) &&
+          item.createdAt < new Date().setDate(new Date().getDate() - 7)
+        );
+      }),
+    },
+    daily: {
+      today: results.filter((item) => {
+        return item.createdAt.getDate() === new Date().getDate();
+      }),
+      yesterday: results.filter((item) => {
+        return item.createdAt === new Date().setDate(new Date().getDate() - 1);
+      }),
+    },
+  };
+  res.send(sortedCigs);
 });
 
 module.exports = router;
