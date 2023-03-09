@@ -33,12 +33,6 @@ router.get("/", (req, res) => {
   });
 });
 
-router.get("/surprise", (req, res) => {
-  res.send(
-    "<h2>Coucou ma Joséphine, je t'aime très fort mon amour 🧸🤍🧸🤍</h2>"
-  );
-});
-
 // GET 1 USER WITH SLUG
 router.get("/:slug", async (req, res) => {
   let data = {};
