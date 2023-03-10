@@ -62,7 +62,7 @@ router.get("/:slug", async (req, res) => {
 });
 
 //REGISTER
-router.post("/register/step1", async (req, res) => {
+router.post("/register", async (req, res) => {
   req.fields.slug = slug(req.fields.username);
   req.fields.mentorToken = req.fields.slug + makeToken(30);
   req.fields.confirmationToken = req.fields.slug + makeToken(30);
