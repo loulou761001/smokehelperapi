@@ -249,6 +249,122 @@ router.post("/confirmMail/:token", async (req, res) => {
   res.status(200).send({ status: "success", data: userFound });
 });
 
+// RESET MDP ETAPE 1
+router.get("/resetPassword/:email", async (req, res) => {
+  let user = await UserModel.aggregate([
+    {
+      $match: { email: { $eq: req.params.email } },
+    },
+    {
+      $project: {
+        _id: 1,
+        username: 1,
+        email: 1,
+      },
+    },
+  ]);
+
+  if (user[0]) {
+    user = user[0];
+    console.log(user);
+    const pwToken = makeToken(12);
+    UserModel.findByIdAndUpdate(
+      user._id,
+      { $set: { resetPasswordToken: pwToken } },
+      { new: true },
+      (err, docs) => {
+        if (!err) {
+          let transporter = nodemailer.createTransport({
+            // service: "gmail",
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
+            auth: {
+              user: "smokehelper1@gmail.com",
+              pass: process.env.NODEMAILER_PASS,
+            },
+          });
+          const mailConfig = {
+            from: "SmokeHelper <smokehelper1@gmail.com>",
+            to: user.email,
+            subject: "Réinitialisation de votre mot de passe",
+            text: "Bonjour",
+            html:
+              "<p>Bonjour " +
+              user.username +
+              ", veuillez copier le code ci-dessous pour changer votre mot de passe.</p><span style='background-color: #55886F;padding: 5px;color: white;font-weight: bold'>" +
+              pwToken +
+              "</span>",
+          };
+          transporter.sendMail(mailConfig, (err, info) => {
+            console.log(info);
+            if (err) {
+              console.log(err);
+            }
+          });
+          res.status(200).send({ status: "success", data: user });
+        } else res.status(400).send("Erreur durant la mise à jour du profil.");
+      }
+    );
+  } else res.status(400).send("Aucun utilisateur trouvé.");
+});
+
+// RESET MDP ETAPE 2
+router.put("/checkPasswordToken/:token", async (req, res) => {
+  if (!req.fields.userId || !objectId.isValid(req.fields.userId)) {
+    res.status(400).send("Aucun utilisateur spécifié ou ID invalide.");
+  }
+  if (!req.params.token) {
+    res.status(400).send("Aucun token spécifié.");
+  }
+  if (!req.fields.newPw) {
+    res.status(400).send("Aucun mdp spécifié.");
+  }
+  const userId = objectId(req.fields.userId);
+  let user = await UserModel.aggregate([
+    {
+      $match: {
+        $and: [
+          { _id: { $eq: userId } },
+          { resetPasswordToken: { $eq: req.params.token } },
+        ],
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        username: 1,
+        email: 1,
+      },
+    },
+  ]);
+  if (user[0]) {
+    user = user[0];
+
+    // PASSWORD HASH
+    bcrypt.hash(req.fields.newPw, saltRounds, function (err, hash) {
+      if (err) {
+        res.status(400).send(err);
+        return;
+      }
+      const newPass = hash;
+      UserModel.findByIdAndUpdate(
+        user._id,
+        { $set: { resetPasswordToken: "", password: newPass } },
+        { new: true },
+        (err, docs) => {
+          if (!err) {
+            res.status(200).send({ status: "success" });
+          } else
+            res.status(400).send("Erreur durant la mise à jour du profil.");
+        }
+      );
+    });
+  } else {
+    res.status(400).send("Aucun utilisateur trouvé");
+  }
+});
+
 // UPDATE
 router.put("/:id", (req, res) => {
   if (!objectId.isValid(req.params.id))
