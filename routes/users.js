@@ -50,6 +50,7 @@ router.get("/:slug", async (req, res) => {
     },
     {
       $project: {
+        email: 1,
         username: 1,
         badges: 1,
         createdAt: 1,
