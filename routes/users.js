@@ -7,7 +7,7 @@ const saltRounds = 10;
 
 const UserModel = require("../models/User");
 
-var slug = require("slug");
+let slug = require("slug");
 const validator = require("validator");
 const nodemailer = require("nodemailer");
 
@@ -54,6 +54,7 @@ router.get("/:slug", async (req, res) => {
         badges: 1,
         createdAt: 1,
         banned: 1,
+        cigInfo: 1,
       },
     },
   ]);
