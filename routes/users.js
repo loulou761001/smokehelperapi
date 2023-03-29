@@ -33,6 +33,80 @@ router.get("/", (req, res) => {
   });
 });
 
+router.get("/topUsers", async (req, res) => {
+  let d = new Date();
+  let startDate = d.setMonth(new Date().getMonth() - 1);
+  const user = await UserModel.aggregate([
+    {
+      $lookup: {
+        from: "cigarettes",
+        localField: "_id",
+        foreignField: "userId",
+        as: "cigarettes",
+        pipeline: [
+          {
+            $match: {
+              createdAt: {
+                $gte: new Date(startDate),
+              },
+            },
+          },
+        ],
+      },
+    },
+    {
+      $match: {
+        $and: [
+          {
+            confirmed: { $eq: true },
+          },
+          {
+            banned: { $eq: false },
+          },
+          {
+            cigarettes: { $exists: true, $ne: [] },
+          },
+        ],
+      },
+    },
+    {
+      $lookup: {
+        from: "badges",
+        localField: "badges",
+        foreignField: "_id",
+        as: "badges",
+      },
+    },
+    {
+      $lookup: {
+        from: "badges",
+        localField: "featuredBadge",
+        foreignField: "_id",
+        as: "featuredBadge",
+      },
+    },
+    {
+      $project: {
+        username: 1,
+        slug: 1,
+        badges: 1,
+        createdAt: 1,
+        banned: 1,
+        cigarettes: 1,
+        cigInfo: 1,
+        numberOfCigs: { $size: "$cigarettes" },
+      },
+    },
+    {
+      $sort: { numberOfCigs: -1 },
+    },
+    {
+      $limit: 10,
+    },
+  ]);
+  res.send(user);
+});
+
 // GET 1 USER WITH SLUG
 router.get("/:slug", async (req, res) => {
   let data = {};
@@ -49,12 +123,22 @@ router.get("/:slug", async (req, res) => {
       },
     },
     {
+      $lookup: {
+        from: "badges",
+        localField: "featuredBadge",
+        foreignField: "_id",
+        as: "featuredBadge",
+      },
+    },
+    {
       $project: {
         email: 1,
         username: 1,
+        slug: 1,
         badges: 1,
         createdAt: 1,
         banned: 1,
+        cigarettes: 1,
         cigInfo: 1,
       },
     },
