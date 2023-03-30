@@ -77,7 +77,7 @@ router.get("/topUsers", async (req, res) => {
         },
         localField: "badges.badge",
         foreignField: "_id",
-        as: "badges.badge",
+        as: "badges",
         pipeline: [
           {
             $set: { unlockDate: "$$date" },
@@ -91,20 +91,9 @@ router.get("/topUsers", async (req, res) => {
     {
       $lookup: {
         from: "badges",
-        let: {
-          date: "$badges.unlockedAt",
-        },
-        localField: "badges.badge",
+        localField: "featuredBadge",
         foreignField: "_id",
-        as: "badges.badge",
-        pipeline: [
-          {
-            $set: { unlockDate: "$$date" },
-          },
-          {
-            $unwind: "$unlockDate",
-          },
-        ],
+        as: "featuredBadge",
       },
     },
     {
@@ -144,7 +133,7 @@ router.get("/:slug", async (req, res) => {
         },
         localField: "badges.badge",
         foreignField: "_id",
-        as: "badges.badge",
+        as: "badges",
         pipeline: [
           {
             $set: { unlockDate: "$$date" },
@@ -158,20 +147,9 @@ router.get("/:slug", async (req, res) => {
     {
       $lookup: {
         from: "badges",
-        let: {
-          date: "$badges.unlockedAt",
-        },
-        localField: "badges.badge",
+        localField: "featuredBadge",
         foreignField: "_id",
-        as: "badges.badge",
-        pipeline: [
-          {
-            $set: { unlockDate: "$$date" },
-          },
-          {
-            $unwind: "$unlockDate",
-          },
-        ],
+        as: "featuredBadge",
       },
     },
     {
@@ -206,7 +184,7 @@ router.get("savings/:slug", async (req, res) => {
         },
         localField: "badges.badge",
         foreignField: "_id",
-        as: "badges.badge",
+        as: "badges",
         pipeline: [
           {
             $set: { unlockDate: "$$date" },
@@ -220,20 +198,9 @@ router.get("savings/:slug", async (req, res) => {
     {
       $lookup: {
         from: "badges",
-        let: {
-          date: "$badges.unlockedAt",
-        },
-        localField: "badges.badge",
+        localField: "featuredBadge",
         foreignField: "_id",
-        as: "badges.badge",
-        pipeline: [
-          {
-            $set: { unlockDate: "$$date" },
-          },
-          {
-            $unwind: "$unlockDate",
-          },
-        ],
+        as: "featuredBadge",
       },
     },
     {
@@ -390,7 +357,7 @@ router.post("/login", async (req, res) => {
         },
         localField: "badges.badge",
         foreignField: "_id",
-        as: "badges.badge",
+        as: "badges",
         pipeline: [
           {
             $set: { unlockDate: "$$date" },
