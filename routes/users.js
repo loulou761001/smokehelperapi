@@ -10,6 +10,7 @@ const UserModel = require("../models/User");
 let slug = require("slug");
 const validator = require("validator");
 const nodemailer = require("nodemailer");
+const { json } = require("express");
 
 // GENERATES A RANDOM TOKEN
 function makeToken(length) {
@@ -24,14 +25,6 @@ function makeToken(length) {
   }
   return result;
 }
-
-// GET ALL USERS
-router.get("/", (req, res) => {
-  UserModel.find((err, docs) => {
-    if (!err) res.send(docs);
-    else console.log("Could not get data : " + err);
-  });
-});
 
 router.get("/topUsers", async (req, res) => {
   let d = new Date();
@@ -115,6 +108,14 @@ router.get("/topUsers", async (req, res) => {
       $limit: 10,
     },
   ]);
+
+  user.forEach((item) => {
+    console.log(item);
+    if (typeof item.cigInfo === "string") {
+      console.log(item);
+      item.cigInfo = JSON.parse(item.cigInfo);
+    }
+  });
   res.send(user);
 });
 
@@ -165,8 +166,12 @@ router.get("/:slug", async (req, res) => {
       },
     },
   ]);
-  if (user[0]) res.send(user[0]);
-  else res.status(400).send("Aucun utilisateur trouvé.");
+  if (user[0]) {
+    if (typeof user[0].cigInfo === "string") {
+      user[0].cigInfo = JSON.parse(user[0].cigInfo);
+    }
+    res.send(user[0]);
+  } else res.status(400).send("Aucun utilisateur trouvé.");
 });
 
 // get monthly savings
@@ -216,8 +221,12 @@ router.get("savings/:slug", async (req, res) => {
       },
     },
   ]);
-  if (user[0]) res.send(user[0]);
-  else res.status(400).send("Aucun utilisateur trouvé.");
+  if (user[0]) {
+    if (typeof user[0].cigInfo === "string") {
+      user[0].cigInfo = JSON.parse(user[0].cigInfo);
+    }
+    res.send(user[0]);
+  } else res.status(400).send("Aucun utilisateur trouvé.");
 });
 
 //REGISTER
@@ -393,8 +402,12 @@ router.post("/login", async (req, res) => {
       user[0].password,
       function (err, result) {
         delete user[0].password;
-        if (user[0] && result === true) res.send(user[0]);
-        else res.status(400).send("Aucun utilisateur trouvé.");
+        if (user[0] && result === true) {
+          if (typeof user[0].cigInfo === "string") {
+            user[0].cigInfo = JSON.parse(user[0].cigInfo);
+          }
+          res.send(user[0]);
+        } else res.status(400).send("Aucun utilisateur trouvé.");
       }
     );
   } else res.status(400).send("Aucun utilisateur trouvé.");
