@@ -562,6 +562,9 @@ router.put("/:id", (req, res) => {
     return res.status(400).send("ID unknown : " + req.params.id);
 
   const updateItem = req.fields;
+  if (typeof updateItem.cigInfo === "string") {
+    updateItem.cigInfo = JSON.parse(updateItem.cigInfo);
+  }
 
   UserModel.findByIdAndUpdate(
     req.params.id,
