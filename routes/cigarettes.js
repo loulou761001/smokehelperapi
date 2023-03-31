@@ -22,6 +22,19 @@ router.get("/:id", (req, res) => {
   });
 });
 
+// GET LAST
+router.get("/getLast/:userId", (req, res) => {
+  if (!req.params.userId || !objectId.isValid(req.params.userId)) {
+    res.status(400).send("Aucun utilisateur spécifié ou ID invalide.");
+  }
+  CigModel.findOne({ userId: req.params.userId })
+    .sort({ createdAt: -1 })
+    .then((data, err) => {
+      if (!err) res.send(data);
+      else console.log("Could not get data : " + err);
+    });
+});
+
 //CREATE
 router.post("/create", async (req, res) => {
   // user verif
