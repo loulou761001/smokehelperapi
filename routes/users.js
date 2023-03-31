@@ -94,6 +94,7 @@ router.get("/topUsers", async (req, res) => {
         username: 1,
         slug: 1,
         badges: 1,
+        featuredBadge: 1,
         createdAt: 1,
         banned: 1,
         cigarettes: 1,
@@ -159,6 +160,7 @@ router.get("/:slug", async (req, res) => {
         username: 1,
         slug: 1,
         badges: 1,
+        featuredBadge: 1,
         createdAt: 1,
         banned: 1,
         cigarettes: 1,
@@ -356,6 +358,14 @@ router.post("/login", async (req, res) => {
         localField: "_id",
         foreignField: "userId",
         as: "cigarettes",
+      },
+    },
+    {
+      $lookup: {
+        from: "badges",
+        localField: "featuredBadge",
+        foreignField: "_id",
+        as: "featuredBadge",
       },
     },
     {
